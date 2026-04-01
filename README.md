@@ -1,4 +1,3 @@
-```markdown
 # 📦 Sistem Laporan Inventaris Toko Sederhana
 
 ![Rust](https://img.shields.io/badge/Rust-1.70+-orange?style=flat&logo=rust)
@@ -182,4 +181,3 @@ Project ini dilisensikan di bawah [MIT License](LICENSE).
     version = "0.1.0"
     edition = "2021"
     description = "Sistem laporan inventaris toko sederhana sebagai latihan fundamental Rust"
-```
