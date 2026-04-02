@@ -4,33 +4,36 @@
 ![Status](https://img.shields.io/badge/Status-Completed-success)
 ![License](https://img.shields.io/badge/License-MIT-blue)
 
-Program Rust sederhana untuk mencatat dan melaporkan kondisi inventaris barang toko. Project ini dibangun sebagai latihan fundamental Rust dengan fokus pada manajemen **ownership**, **type conversion**, dan struktur data dasar tanpa menggunakan kontrol alur kompleks.
+Program Rust sederhana untuk mencatat dan melaporkan kondisi inventaris barang toko. Project ini dibangun sebagai latihan fundamental Rust dengan fokus pada manajemen **ownership & borrowing**, **control flow**, **looping**, dan struktur data dasar.
 
 ---
 
 ## 📋 Tentang Project
 
-Sebuah toko kecil membutuhkan sistem untuk mencetak laporan inventaris dari data yang sudah disiapkan. Program ini menyimpan data 3 jenis barang, menghitung total harga per barang, serta menghitung nilai total inventaris beserta pajaknya, lalu menampilkan laporan terformat ke terminal.
+Sebuah toko kecil membutuhkan sistem untuk mencetak laporan inventaris dari data yang sudah disiapkan. Program ini menyimpan data 3 jenis barang, menghitung total harga per barang, menentukan status stok secara otomatis, serta menghitung nilai total inventaris beserta pajaknya — lalu menampilkan laporan terformat ke terminal.
 
 ### 🎯 Tujuan Pembelajaran
 Project ini dirancang untuk melatih pemahaman materi dasar Rust:
 - ✅ **Ownership & Borrowing** pada `Array of String`
 - ✅ **Type Conversion** (`as` casting) antar tipe numerik
-- ✅ Penggunaan **Tuple** untuk pengelompokan data
-- ✅ Manipulasi **Array** tanpa loop
+- ✅ **For Loop** untuk iterasi array dengan index
+- ✅ **If Expression** untuk keputusan status stok
+- ✅ **Augmented Assignment** untuk akumulasi nilai di dalam loop
+- ✅ Penggunaan `const` sebagai batas referensi
 - ✅ Format output dengan `println!` macro
 
 ---
 
 ## 🚀 Fitur
 
-- **Laporan Terstruktur**: Menampilkan daftar barang dengan nama, stok, harga satuan, dan total harga.
-- **Kalkulasi Otomatis**: 
+- **Laporan Terstruktur**: Menampilkan daftar barang dengan nama, stok, harga satuan, total harga, dan status stok.
+- **Kalkulasi Otomatis**:
   - Total harga per barang (`stok × harga`)
-  - Total nilai inventaris seluruh barang
+  - Total nilai inventaris seluruh barang (akumulasi dalam loop)
   - Perhitungan pajak inventaris
+- **Status Stok Dinamis**: Setiap barang otomatis mendapat status berdasarkan perbandingan stok aktual terhadap batas maksimum.
 - **Tanpa Input User**: Data disiapkan secara *hardcoded* sesuai spesifikasi.
-- **Output Bersih**: Laporan diformat rapi tanpa karakter debug.
+- **Output Bersih**: Laporan diformat rapi dan terstruktur.
 
 ---
 
@@ -39,9 +42,10 @@ Project ini dirancang untuk melatih pemahaman materi dasar Rust:
 | Komponen | Keterangan |
 |----------|------------|
 | **Bahasa** | Rust |
-| **Struktur Data** | `Array`, `Tuple`, `String`, `const` |
-| **Tipe Data** | `String`, `i8`, `i32`, `f32` |
-| **Batasan** | ❌ Tanpa `loop`, `for`, `while`<br>❌ Tanpa `if/else`<br>❌ Tanpa `Vec` atau struct |
+| **Struktur Data** | `Array`, `String`, `const` |
+| **Tipe Data** | `String`, `u32`, `i8` |
+| **Control Flow** | `for` loop, `if` expression |
+| **Batasan** | ❌ Tanpa `Vec` atau `struct` |
 
 ---
 
@@ -76,26 +80,30 @@ cargo build --release
 ```text
 ===== LAPORAN INVENTARIS TOKO =====
 
-[1] Nama Barang: indomie
-    Stok: 30
-    Harga satuan: 5000
-    Total Harga: 150000
+[1]  Nama Barang                : indomie
+      Stock                     : 30
+      Harga satuan              : 5000
+      Total harga               : 150000
+      Status Stok               : Aman
 
-[2] Nama Barang: Beras
-    Stok: 45
-    Harga satuan: 43000
-    Total Harga: 1935000
+[2]  Nama Barang                : Beras
+      Stock                     : 45
+      Harga satuan              : 43000
+      Total harga               : 1935000
+      Status Stok               : Aman
 
-[3] Nama Barang: Gula
-    Stok: 12
-    Harga satuan: 12000
-    Total Harga: 144000
+[3]  Nama Barang                : Gula
+      Stock                     : 12
+      Harga satuan              : 12000
+      Total harga               : 144000
+      Status Stok               : Segera Restock
 
-Batas Maksimum Stock     : 50.0 pcs
-Total Inventaris         : Rp 2229000
-Pajak                    : 2 %
-Total Inventaris + Pajak : Rp 2273580
-==================================================
+===== RINGKASAN =====
+      Batas Maksimum Stock      : 50 pcs
+      Total Inventaris          : Rp 2229000
+      Pajak                     : 2%
+      Total Inventaris + Pajak  : Rp 2273580
+====================================
 ```
 
 ---
@@ -103,25 +111,49 @@ Total Inventaris + Pajak : Rp 2273580
 ## 🧠 Poin Teknis Penting
 
 ### 1. Ownership pada Array of String
-Menggunakan `&items[i]` untuk meminjam referensi string tanpa memindahkan ownership, sehingga array tetap bisa digunakan berulang kali:
+Menggunakan `&items[i]` untuk meminjam referensi string tanpa memindahkan ownership, sehingga array tetap valid sepanjang program berjalan:
 ```rust
-let item1: &String = &items[0]; // Borrow, bukan move
+// Borrow via referensi, bukan move — owner tetap `items`
+println!("{}", &items[i]);
 ```
 
-### 2. Type Conversion
-Konversi tipe data eksplisit untuk kalkulasi antar tipe berbeda:
+### 2. Iterasi Array dengan Index
+Menggunakan `for i in 0..3` untuk mengakses ketiga array sekaligus dalam satu iterasi — menghindari repetisi kode manual:
 ```rust
-let total_price1: i32 = stock1 as i32 * price1;
+for i in 0..3 {
+    println!("{}", &items[i]);
+    println!("{}", &stocks[i]);
+    println!("{}", &prices[i]);
+}
 ```
 
-### 3. Struktur Tuple
-Tuple digunakan untuk mengelompokkan ringkasan data setiap barang:
+### 3. Akumulasi dalam Loop
+Variable `total_inventaris` dideklarasikan `mut` di luar loop lalu diakumulasikan di dalam — pola umum untuk menghitung total dari koleksi data:
 ```rust
-let summary: (
-    (String, String, String, String),
-    (String, String, String, String),
-    (String, String, String, String),
-) = ( ... );
+let mut total_inventaris: u32 = 0;
+for i in 0..3 {
+    total_inventaris += &prices[i] * stocks[i];
+}
+```
+
+### 4. If Expression untuk Status Stok
+`if` digunakan sebagai *expression* yang menghasilkan value `&str`, lalu disimpan ke variable sebelum dicetak — memisahkan logika dari presentasi:
+```rust
+let status: &str = if stocks[i] >= MAKSIMUM_STOCK / 2 {
+    "Aman"
+} else if stocks[i] >= MAKSIMUM_STOCK / 5 {
+    "Segera Restock"
+} else {
+    "Kritis"
+};
+println!("Status Stok: {status}");
+```
+
+### 5. Const sebagai Referensi Batas
+`MAKSIMUM_STOCK` tidak dipakai sebagai stok aktual, melainkan sebagai pembanding untuk menentukan status — sesuai peruntukannya sebagai batas maksimum:
+```rust
+const MAKSIMUM_STOCK: u32 = 50;
+const PAJAK: i8 = 2;
 ```
 
 ---
@@ -138,14 +170,22 @@ sistem_laporan_inventaris_toko_sederhana/
 
 ---
 
+## 🗺️ Riwayat Pengembangan
+
+| Versi | Deskripsi |
+|-------|-----------|
+| **v1** | Akses array manual per index, kalkulasi tanpa loop, tanpa status stok |
+| **v2** | Refactor menggunakan `for` loop, tambah `if` expression untuk status stok, akumulasi total dalam loop |
+
+---
+
 ## 📝 Catatan Pengembangan
 
-Project ini sengaja dibuat tanpa `loop` dan `if/else` sebagai latihan fundamental. Untuk pengembangan lebih lanjut, dapat ditambahkan:
-- [ ] Input dinamis dari user
-- [ ] Penggunaan `Vec` untuk jumlah barang fleksibel
-- [ ] Loop untuk iterasi yang lebih efisien
-- [ ] Conditional untuk status stok (Aman/Kritis)
-- [ ] Export laporan ke file
+Untuk pengembangan lebih lanjut, dapat ditambahkan:
+- [ ] Input dinamis dari user (`stdin`)
+- [ ] Penggunaan `Vec` untuk jumlah barang yang fleksibel
+- [ ] `struct` untuk merepresentasikan satu barang secara utuh
+- [ ] Export laporan ke file teks
 
 ---
 
@@ -164,20 +204,3 @@ Project ini dilisensikan di bawah [MIT License](LICENSE).
 ---
 
 ⭐ *Jika project ini membantu pembelajaran Anda, jangan lupa berikan star!*
-```
-
-### 💡 Tips Tambahan untuk Repository Kamu:
-
-1.  **Simpan README**: Buat file bernama `README.md` di folder utama repository dan paste konten di atas.
-2.  **Tambahkan `.gitignore`**: Pastikan file `target/` tidak ter-commit dengan membuat file `.gitignore`:
-    ```
-    target/
-    Cargo.lock
-    ```
-3.  **Cek Cargo.toml**: Pastikan `Cargo.toml` kamu memiliki deskripsi yang sesuai:
-    ```toml
-    [package]
-    name = "sistem_laporan_inventaris_toko_sederhana"
-    version = "0.1.0"
-    edition = "2021"
-    description = "Sistem laporan inventaris toko sederhana sebagai latihan fundamental Rust"
