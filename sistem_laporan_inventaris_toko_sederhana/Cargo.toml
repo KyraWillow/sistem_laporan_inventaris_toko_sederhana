@@ -1,6 +1,0 @@
-[package]
-name = "sistem_laporan_inventaris_toko_sederhana"
-version = "0.1.0"
-edition = "2024"
-
-[dependencies]
